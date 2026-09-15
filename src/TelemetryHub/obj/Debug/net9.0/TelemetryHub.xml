@@ -1,0 +1,237 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TelemetryHub</name>
+    </assembly>
+    <members>
+        <member name="T:TelemetryHub.Domain.Models.TelemetryPayload">
+            <summary>
+            Immutable, zero-allocation Data Transfer Object (DTO) for high-throughput telemetry ingestion.
+            Declared as a <see langword="readonly record struct"/> to guarantee value semantics and prevent
+            Garbage Collection (GC) heap allocations on hot API routes.
+            </summary>
+            <param name="DeviceId">Unique identifier of the sending device/sensor.</param>
+            <param name="Timestamp">UTC timestamp when the measurement was taken.</param>
+            <param name="MetricName">Identifier for the metric (e.g., "cpu_usage", "temperature_celsius").</param>
+            <param name="Value">Numerical reading value.</param>
+            <param name="Tags">Optional key-value pairs representing contextual dimensions (e.g., region, firmware version).</param>
+        </member>
+        <member name="M:TelemetryHub.Domain.Models.TelemetryPayload.#ctor(System.Guid,System.DateTimeOffset,System.String,System.Double,System.Collections.Generic.IReadOnlyDictionary{System.String,System.String})">
+            <summary>
+            Immutable, zero-allocation Data Transfer Object (DTO) for high-throughput telemetry ingestion.
+            Declared as a <see langword="readonly record struct"/> to guarantee value semantics and prevent
+            Garbage Collection (GC) heap allocations on hot API routes.
+            </summary>
+            <param name="DeviceId">Unique identifier of the sending device/sensor.</param>
+            <param name="Timestamp">UTC timestamp when the measurement was taken.</param>
+            <param name="MetricName">Identifier for the metric (e.g., "cpu_usage", "temperature_celsius").</param>
+            <param name="Value">Numerical reading value.</param>
+            <param name="Tags">Optional key-value pairs representing contextual dimensions (e.g., region, firmware version).</param>
+        </member>
+        <member name="P:TelemetryHub.Domain.Models.TelemetryPayload.DeviceId">
+            <summary>Unique identifier of the sending device/sensor.</summary>
+        </member>
+        <member name="P:TelemetryHub.Domain.Models.TelemetryPayload.Timestamp">
+            <summary>UTC timestamp when the measurement was taken.</summary>
+        </member>
+        <member name="P:TelemetryHub.Domain.Models.TelemetryPayload.MetricName">
+            <summary>Identifier for the metric (e.g., "cpu_usage", "temperature_celsius").</summary>
+        </member>
+        <member name="P:TelemetryHub.Domain.Models.TelemetryPayload.Value">
+            <summary>Numerical reading value.</summary>
+        </member>
+        <member name="P:TelemetryHub.Domain.Models.TelemetryPayload.Tags">
+            <summary>Optional key-value pairs representing contextual dimensions (e.g., region, firmware version).</summary>
+        </member>
+        <member name="M:TelemetryHub.Domain.Models.TelemetryPayload.IsValid">
+            <summary>
+            Validates the telemetry payload without allocating heap memory.
+            </summary>
+            <returns><see langword="true"/> if payload is valid; otherwise <see langword="false"/>.</returns>
+        </member>
+        <member name="T:TelemetryHub.Endpoints.TelemetryEndpoints">
+            <summary>
+            Defines high-performance Minimal API endpoints for telemetry ingestion, live results, and analytics.
+            </summary>
+        </member>
+        <member name="M:TelemetryHub.Endpoints.TelemetryEndpoints.MapTelemetryEndpoints(Microsoft.AspNetCore.Routing.IEndpointRouteBuilder)">
+            <summary>
+            Registers telemetry ingestion and reporting endpoints into the HTTP request pipeline.
+            </summary>
+            <param name="app">The endpoint route builder.</param>
+            <returns>The route builder for chaining configuration.</returns>
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Channels.ITelemetryChannel">
+            <summary>
+            Abstraction interface for the high-throughput lock-free Telemetry channel.
+            Decouples ASP.NET Core ingestion endpoints from background consumers.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.ITelemetryChannel.Writer">
+            <summary>
+            Gets the channel writer used by API ingestion endpoints to enqueue incoming telemetry payloads.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.ITelemetryChannel.Reader">
+            <summary>
+            Gets the channel reader used by background worker services to consume telemetry payloads.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Channels.TelemetryChannel">
+            <summary>
+            High-performance thread-safe channel wrapper managing the telemetry ingestion queue.
+            Utilizes <see cref="M:System.Threading.Channels.Channel.CreateBounded``1(System.Threading.Channels.BoundedChannelOptions)"/> for low-latency, backpressure-aware ingestion.
+            </summary>
+        </member>
+        <member name="M:TelemetryHub.Infrastructure.Channels.TelemetryChannel.#ctor(Microsoft.Extensions.Options.IOptions{TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions})">
+            <summary>
+            Initializes a new instance of the <see cref="T:TelemetryHub.Infrastructure.Channels.TelemetryChannel"/> class.
+            </summary>
+            <param name="options">Configuration options for channel capacity and backpressure mode.</param>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannel.Writer">
+            <inheritdoc />
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannel.Reader">
+            <inheritdoc />
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions">
+            <summary>
+            Strongly-typed configuration options for the high-throughput telemetry channel.
+            </summary>
+        </member>
+        <member name="F:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions.SectionName">
+            <summary>
+            Configuration section name in appsettings.json.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions.Capacity">
+            <summary>
+            Gets or sets the maximum buffer capacity of the bounded channel. Defaults to 10,000.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions.FullMode">
+            <summary>
+            Gets or sets the behavior when writing to a full channel. Defaults to <see cref="F:System.Threading.Channels.BoundedChannelFullMode.Wait"/>.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions.SingleReader">
+            <summary>
+            Gets or sets whether there is guaranteed to only ever be a single reader. Defaults to <see langword="true"/>.
+            </summary>
+        </member>
+        <member name="P:TelemetryHub.Infrastructure.Channels.TelemetryChannelOptions.AllowSynchronousContinuations">
+            <summary>
+            Gets or sets whether writers to the channel may perform operations synchronously.
+            Set to <see langword="false"/> to avoid thread pool starvation and unhandled stack dives under high throughput.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Storage.MetricAnalytics">
+            <summary>
+            Model representing calculated analytical insights for a metric.
+            </summary>
+        </member>
+        <member name="M:TelemetryHub.Infrastructure.Storage.MetricAnalytics.#ctor(System.String,System.Int32,System.Double,System.Double,System.Double,System.String)">
+            <summary>
+            Model representing calculated analytical insights for a metric.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Storage.ITelemetryStorage">
+            <summary>
+            Interface for telemetry analytics storage.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Infrastructure.Storage.TelemetryStorage">
+            <summary>
+            Thread-safe in-memory storage holding recent telemetry items and real-time analytical calculations.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Services.CoinGeckoResponse">
+            <summary>
+            CoinGecko API'sinden dönen fiyat yanıtı.
+            </summary>
+        </member>
+        <member name="T:TelemetryHub.Services.CoinGeckoProducerService">
+            <summary>
+            CoinGecko ücretsiz API'sinden Bitcoin ve Ethereum fiyatlarını çekip
+            telemetry kanalına basan üretici arka plan servisi.
+            </summary>
+            <param name="channel">Telemetry kanalı.</param>
+            <param name="httpClient">CoinGecko için yapılandırılmış HTTP istemcisi.</param>
+            <param name="logger">Yapılandırılmış logger.</param>
+        </member>
+        <member name="M:TelemetryHub.Services.CoinGeckoProducerService.#ctor(TelemetryHub.Infrastructure.Channels.ITelemetryChannel,System.Net.Http.HttpClient,Microsoft.Extensions.Logging.ILogger{TelemetryHub.Services.CoinGeckoProducerService})">
+            <summary>
+            CoinGecko ücretsiz API'sinden Bitcoin ve Ethereum fiyatlarını çekip
+            telemetry kanalına basan üretici arka plan servisi.
+            </summary>
+            <param name="channel">Telemetry kanalı.</param>
+            <param name="httpClient">CoinGecko için yapılandırılmış HTTP istemcisi.</param>
+            <param name="logger">Yapılandırılmış logger.</param>
+        </member>
+        <member name="T:TelemetryHub.Services.DeviceSimulatorService">
+            <summary>
+            Gerçekçi bir IoT cihaz filosu simüle eden üretici arka plan servisi.
+            Her cihaz farklı bir metrik ve farklı bir veri pattern'ı üretir:
+            - Araç bataryası: Zamanla azalan trend + şarj döngüleri
+            - Motor sıcaklığı: Sinüs dalgası + rastgele anlık sıcaklık artışı (spike)
+            - Fabrika titreşimi: Düşük gürültü + nadir anomali
+            </summary>
+            <param name="channel">Telemetry kanalı.</param>
+            <param name="logger">Yapılandırılmış logger.</param>
+        </member>
+        <member name="M:TelemetryHub.Services.DeviceSimulatorService.#ctor(TelemetryHub.Infrastructure.Channels.ITelemetryChannel,Microsoft.Extensions.Logging.ILogger{TelemetryHub.Services.DeviceSimulatorService})">
+            <summary>
+            Gerçekçi bir IoT cihaz filosu simüle eden üretici arka plan servisi.
+            Her cihaz farklı bir metrik ve farklı bir veri pattern'ı üretir:
+            - Araç bataryası: Zamanla azalan trend + şarj döngüleri
+            - Motor sıcaklığı: Sinüs dalgası + rastgele anlık sıcaklık artışı (spike)
+            - Fabrika titreşimi: Düşük gürültü + nadir anomali
+            </summary>
+            <param name="channel">Telemetry kanalı.</param>
+            <param name="logger">Yapılandırılmış logger.</param>
+        </member>
+        <member name="T:TelemetryHub.Services.SystemMetricsProducerService">
+            <summary>
+            Background producer service that reads real CPU, RAM, GC and thread metrics
+            from the host machine and pushes them into the telemetry ingestion channel.
+            </summary>
+            <param name="channel">Telemetry channel to write metrics into.</param>
+            <param name="logger">Structured logger.</param>
+        </member>
+        <member name="M:TelemetryHub.Services.SystemMetricsProducerService.#ctor(TelemetryHub.Infrastructure.Channels.ITelemetryChannel,Microsoft.Extensions.Logging.ILogger{TelemetryHub.Services.SystemMetricsProducerService})">
+            <summary>
+            Background producer service that reads real CPU, RAM, GC and thread metrics
+            from the host machine and pushes them into the telemetry ingestion channel.
+            </summary>
+            <param name="channel">Telemetry channel to write metrics into.</param>
+            <param name="logger">Structured logger.</param>
+        </member>
+        <member name="T:TelemetryHub.Services.TelemetryConsumerService">
+            <summary>
+            Background worker service responsible for consuming telemetry payloads from the channel pipeline.
+            Designed for high throughput with zero allocations in the main consumption loop.
+            </summary>
+            <param name="channel">The telemetry channel abstraction.</param>
+            <param name="storage">In-memory analytics storage.</param>
+            <param name="logger">Structured logger instance.</param>
+        </member>
+        <member name="M:TelemetryHub.Services.TelemetryConsumerService.#ctor(TelemetryHub.Infrastructure.Channels.ITelemetryChannel,TelemetryHub.Infrastructure.Storage.ITelemetryStorage,Microsoft.Extensions.Logging.ILogger{TelemetryHub.Services.TelemetryConsumerService})">
+            <summary>
+            Background worker service responsible for consuming telemetry payloads from the channel pipeline.
+            Designed for high throughput with zero allocations in the main consumption loop.
+            </summary>
+            <param name="channel">The telemetry channel abstraction.</param>
+            <param name="storage">In-memory analytics storage.</param>
+            <param name="logger">Structured logger instance.</param>
+        </member>
+        <member name="M:TelemetryHub.Services.TelemetryConsumerService.ExecuteAsync(System.Threading.CancellationToken)">
+            <inheritdoc />
+        </member>
+        <member name="M:TelemetryHub.Services.TelemetryConsumerService.ProcessPayload(TelemetryHub.Domain.Models.TelemetryPayload@)">
+            <summary>
+            Hot-path payload processor. Stores processed items and calculates analytics.
+            </summary>
+        </member>
+    </members>
+</doc>

@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telemetry Hub | Live Processed Results & Analytics</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --card-border: rgba(255, 255, 255, 0.1);
+            --primary: #38bdf8;
+            --primary-glow: rgba(56, 189, 248, 0.3);
+            --success: #34d399;
+            --warning: #fbbf24;
+            --danger: #f87171;
+            --accent: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.12) 0px, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .logo-title {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.5rem;
+            box-shadow: 0 0 20px var(--primary-glow);
+        }
+
+        h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(52, 211, 153, 0.15);
+            color: var(--success);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 600;
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--success);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--success);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            50% {
+                opacity: 0.4;
+                transform: scale(0.85);
+            }
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .sub-text {
+            font-size: 0.8rem;
+            color: var(--primary);
+            margin-top: 0.5rem;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin: 2rem 0 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Analytics Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .analytic-card {
+            background: rgba(30, 41, 59, 0.8);
+            border: 1px solid var(--card-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .analytic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .metric-title {
+            font-weight: 600;
+            font-size: 1rem;
+            color: var(--primary);
+        }
+
+        .status-pill {
+            padding: 0.25rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .status-normal {
+            background: rgba(52, 211, 153, 0.2);
+            color: var(--success);
+        }
+
+        .status-warning {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+        }
+
+        .status-critical {
+            background: rgba(248, 113, 113, 0.2);
+            color: var(--danger);
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            margin-top: 0.4rem;
+            color: var(--text-muted);
+        }
+
+        .stat-val {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        /* Results Table */
+        .table-container {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        th {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 1rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .form-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 900px) {
+            .form-panel {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.4rem;
+        }
+
+        input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid var(--card-border);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.85rem 1.2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #0284c7);
+            color: #0f172a;
+        }
+
+        .btn-accent {
+            background: linear-gradient(135deg, var(--accent), #4f46e5);
+            color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <div class="logo-title">
+                <div class="logo-icon">⚡</div>
+                <div>
+                    <h1>Telemetry Hub Results & Analytics</h1>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Real-Time Processing Stream & Metric
+                        Intelligence (.NET 9 Engine)</div>
+                </div>
+            </div>
+            <div class="badge">
+                <div class="pulse-dot"></div>
+                <span id="engineStatus">Engine Online</span>
+            </div>
+        </header>
+
+        <!-- Metric Cards -->
+        <div class="grid">
+            <div class="card">
+                <div class="card-label">Total Ingested Payloads</div>
+                <div class="card-value" id="totalIngested">0</div>
+                <div class="sub-text">⚡ Lock-free Channel Ingestion</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Processed Results Count</div>
+                <div class="card-value" id="processedCount">0</div>
+                <div class="sub-text">📥 Worker Background Consumer</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Engine Uptime</div>
+                <div class="card-value" id="uptime">0s</div>
+                <div class="sub-text">🚀 .NET 9 Engine Running</div>
+            </div>
+            <div class="card">
+                <div class="card-label">Channel Capacity</div>
+                <div class="card-value">10,000</div>
+                <div class="sub-text">🛡️ Backpressure BoundedChannel</div>
+            </div>
+        </div>
+
+        <!-- Live Computed Analytics Section -->
+        <div class="section-title">📊 Live Calculated Metric Analytics</div>
+        <div class="analytics-grid" id="analyticsGrid">
+            <div style="color: var(--text-muted); font-size: 0.9rem;">No metric data processed yet. Send telemetry
+                below!</div>
+        </div>
+
+        <!-- Live Processed Results Table -->
+        <div class="section-title">📥 Live Processed Results Stream (Consumer Output)</div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Time</th>
+                        <th>Device ID</th>
+                        <th>Metric Name</th>
+                        <th>Value</th>
+                        <th>Status</th>
+                        <th>Tags</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTable">
+                    <tr>
+                        <td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                            No telemetry processed yet. Use the test panel below to send data!
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Form & Control Panel -->
+        <div class="form-panel">
+            <div class="card">
+                <div style="font-weight: 600; margin-bottom: 1rem;">Send Custom Telemetry Payload</div>
+                <div class="form-group">
+                    <label>Device ID <span style="color: var(--text-muted); font-size:0.78rem;">(GUID format
+                            required)</span></label>
+                    <div style="display:flex; gap: 0.5rem;">
+                        <input type="text" id="deviceId" value="3fa85f64-5717-4562-b3fc-2c963f66afa6" style="flex:1;">
+                        <button onclick="document.getElementById('deviceId').value=crypto.randomUUID()"
+                            style="flex:0; padding:0 0.75rem; background: rgba(129,140,248,0.2); color:var(--accent); border:1px solid var(--accent); border-radius:8px; cursor:pointer; white-space:nowrap; font-size:0.8rem;">🔀
+                            New ID</button>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Metric Name</label>
+                    <select id="metricName"
+                        style="width:100%; padding:0.75rem 1rem; background:rgba(15,23,42,0.6); border:1px solid var(--card-border); border-radius:8px; color:var(--text-main); font-size:0.9rem; outline:none;">
+                        <option value="cpu_utilization_percent">cpu_utilization_percent</option>
+                        <option value="engine_temperature_celsius">engine_temperature_celsius</option>
+                        <option value="battery_soc_percent">battery_soc_percent</option>
+                        <option value="memory_used_mb">memory_used_mb</option>
+                        <option value="network_latency_ms">network_latency_ms</option>
+                        <option value="solar_voltage_volts">solar_voltage_volts</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Metric Value</label>
+                    <input type="number" id="metricValue" value="78.5" step="0.1">
+                </div>
+                <div class="btn-group">
+                    <button class="btn-primary" onclick="sendSingleTelemetry()">▶ Send Single Payload</button>
+                    <button class="btn-accent" onclick="sendSamplePack()">🚨 Send Critical Temp (98.6°C)</button>
+                </div>
+            </div>
+            <div class="card">
+                <div style="font-weight: 600; margin-bottom: 1rem;">Automated Bulk Simulation</div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">
+                    Simulate 100 telemetry payloads sent simultaneously across multiple device sensors and metric types.
+                </p>
+                <button class="btn-accent" style="width: 100%; padding: 1.2rem;" onclick="sendBatchBurst()">
+                    🚀 Run 100 Item Bulk Test Simulation
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function updateDashboard() {
+            try {
+                // 1. Fetch Stats
+                const statsRes = await fetch('/api/v1/telemetry/stats');
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    document.getElementById('totalIngested').innerText = stats.totalIngested.toLocaleString();
+                    document.getElementById('uptime').innerText = stats.uptimeSeconds + 's';
+                }
+
+                // 2. Fetch Recent Processed Results
+                const recentRes = await fetch('/api/v1/telemetry/recent');
+                if (recentRes.ok) {
+                    const items = await recentRes.json();
+                    document.getElementById('processedCount').innerText = items.length;
+                    renderTable(items);
+                }
+
+                // 3. Fetch Computed Analytics
+                const analyticsRes = await fetch('/api/v1/telemetry/analytics');
+                if (analyticsRes.ok) {
+                    const analytics = await analyticsRes.json();
+                    renderAnalytics(analytics);
+                }
+            } catch (err) {
+                console.error("Failed to update dashboard", err);
+            }
+        }
+
+        function renderTable(items) {
+            const tbody = document.getElementById('resultsTable');
+            if (!items || items.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 2rem;">No telemetry processed yet. Use the test panel below to send data!</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = items.map(item => {
+                const time = new Date(item.timestamp).toLocaleTimeString();
+                const val = item.value;
+                let statusBadge = '<span class="status-pill status-normal">🟢 NORMAL</span>';
+                if (val > 85) statusBadge = '<span class="status-pill status-critical">🚨 CRITICAL</span>';
+                else if (val > 70) statusBadge = '<span class="status-pill status-warning">⚠️ WARNING</span>';
+
+                const tagsStr = item.tags ? Object.entries(item.tags).map(([k, v]) => `${k}:${v}`).join(', ') : '-';
+
+                return `
+                    <tr>
+                        <td style="color: var(--text-muted);">${time}</td>
+                        <td style="color: var(--primary);">${item.deviceId.substring(0, 18)}...</td>
+                        <td style="font-weight: 600;">${item.metricName}</td>
+                        <td style="font-size: 1.1rem; color: #fff;">${val}</td>
+                        <td>${statusBadge}</td>
+                        <td style="color: var(--text-muted); font-size: 0.8rem;">${tagsStr}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function renderAnalytics(analytics) {
+            const grid = document.getElementById('analyticsGrid');
+            if (!analytics || analytics.length === 0) {
+                grid.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">No metric data processed yet.</div>`;
+                return;
+            }
+
+            grid.innerHTML = analytics.map(a => {
+                let statusClass = 'status-normal';
+                if (a.status.includes('CRITICAL')) statusClass = 'status-critical';
+                else if (a.status.includes('WARNING')) statusClass = 'status-warning';
+
+                return `
+                    <div class="analytic-card">
+                        <div class="analytic-header">
+                            <span class="metric-title">${a.metricName}</span>
+                            <span class="status-pill ${statusClass}">${a.status}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Count:</span>
+                            <span class="stat-val">${a.count} samples</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Average Value:</span>
+                            <span class="stat-val" style="color: var(--primary); font-size: 1.05rem;">${a.averageValue}</span>
+                        </div>
+                        <div class="stat-row">
+                            <span>Min / Max Range:</span>
+                            <span class="stat-val">${a.minValue} - ${a.maxValue}</span>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function sendSingleTelemetry() {
+            const deviceId = document.getElementById('deviceId').value;
+            const metricName = document.getElementById('metricName').value;
+            const value = parseFloat(document.getElementById('metricValue').value);
+
+            await fetch('/api/v1/telemetry', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    deviceId: deviceId,
+                    timestamp: new Date().toISOString(),
+                    metricName: metricName,
+                    value: value,
+                    tags: { env: "production", unit: "metric" }
+                })
+            });
+            updateDashboard();
+        }
+
+        async function sendSamplePack() {
+            // Set the select dropdown to engine_temperature_celsius
+            const sel = document.getElementById('metricName');
+            for (let opt of sel.options) { if (opt.value === 'engine_temperature_celsius') { opt.selected = true; break; } }
+            document.getElementById('metricValue').value = "98.6";
+            await sendSingleTelemetry();
+        }
+
+        async function sendBatchBurst() {
+            const batch = [];
+            const metrics = ["cpu_utilization_percent", "memory_used_mb", "network_latency_ms", "engine_temperature_celsius"];
+            // Pre-generate 5 device GUIDs to simulate a fleet of sensors
+            const devices = [crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID(), crypto.randomUUID()];
+            for (let i = 0; i < 100; i++) {
+                const metric = metrics[i % metrics.length];
+                batch.push({
+                    deviceId: devices[i % 5],
+                    timestamp: new Date().toISOString(),
+                    metricName: metric,
+                    value: Math.round((Math.random() * 80 + 20) * 10) / 10,
+                    tags: { batch: "sim_100" }
+                });
+            }
+
+            await fetch('/api/v1/telemetry/batch', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(batch)
+            });
+            updateDashboard();
+        }
+
+        setInterval(updateDashboard, 1000);
+        updateDashboard();
+    </script>
+</body>
+
+</html>
